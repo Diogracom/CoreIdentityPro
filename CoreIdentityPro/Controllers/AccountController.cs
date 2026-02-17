@@ -10,21 +10,15 @@ namespace CoreIdentityPro.Controllers
     [ApiController]
     public class AccountController(UserManager<IdentityUser> userManager,
                                    SignInManager<IdentityUser> signInManager) : ControllerBase
-    {
-        [HttpGet("register")]
-        public ActionResult<string> Register()
-        {
-            return "";
-        }
-
+    {        
         [HttpPost("register")]
         public async Task<ActionResult<string>> RegisterUser(Employee employee)
         {
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
-                var user = new  IdentityUser 
-                 {
-                    UserName =employee.Email,
+                var user = new IdentityUser
+                {
+                    UserName = employee.Email,
                     Email = employee.Email,
                 };
                 var result = await userManager.CreateAsync(user, employee.Name!);
@@ -44,5 +38,31 @@ namespace CoreIdentityPro.Controllers
             return "";
         }
 
+        [HttpPost]
+        public async Task<ActionResult<string>> Login(string email, string password)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await signInManager.PasswordSignInAsync(email, password, isPersistent: false, /*Lock Account o Failure*/false);
+
+                if (result.Succeeded)
+                {
+                    return "Successfully Login In";
+                }
+
+                ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+
+            }
+
+            return "An Error Occured Please Contact Admin";
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<string>> Logout()
+        {
+            await signInManager.SignOutAsync();
+            //  return RedirectToAction();
+            return "SignOut Successful";
+        }
     }
 }
